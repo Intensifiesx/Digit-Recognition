@@ -46,22 +46,6 @@ def get_image(path):  # Get Image Function
     )  # Transforms the Python list into a NumPy array
 
 
-# Print Result Function
-def print_result(predicted_probabilities, predicted_number):
-    print("Chance of it being a...")
-    print(f"0: {predicted_probabilities[0] * 100:05.2f}%", end="\t")
-    print(f"1: {predicted_probabilities[1] * 100:05.2f}%")
-    print(f"2: {predicted_probabilities[2] * 100:05.2f}%", end="\t")
-    print(f"3: {predicted_probabilities[3] * 100:05.2f}%")
-    print(f"4: {predicted_probabilities[4] * 100:05.2f}%", end="\t")
-    print(f"5: {predicted_probabilities[5] * 100:05.2f}%")
-    print(f"6: {predicted_probabilities[6] * 100:05.2f}%", end="\t")
-    print(f"7: {predicted_probabilities[7] * 100:05.2f}%")
-    print(f"8: {predicted_probabilities[8] * 100:05.2f}%", end="\t")
-    print(f"9: {predicted_probabilities[9] * 100:05.2f}%")
-    print(f"Hmmmm... I think the number is a {predicted_number}")
-
-
 # %%
 # ======Data Loading======
 df = pd.DataFrame()
@@ -89,30 +73,36 @@ for index, folder in enumerate(
 df.insert(0, "Number", label)  # Appends the label to the first column of the dataframe
 features = df.drop("Number", axis=1)  # Gets the features
 x_train, x_test, y_train, y_test = train_test_split(
-    features, label, test_size=0.2
-)  # Splits the data into training and test sets
-
-# %%
-# ======Training======
-model = RandomForestClassifier(random_state=42)  # Defines the model
-model.fit(x_train, y_train)  # Fits the parameters to the model
-
+    features, label, test_size=0.2, random_state=42
+)  # Splits the data into training and testing sets
 # %%
 # ======Testing======
-# Gets accuracy score from test set
-predictions = model.predict(x_test)
-print(f"Accuracy:\t{accuracy_score(y_test, predictions)}")
+model = RandomForestClassifier(random_state=42)  # Defines the model
+model.fit(x_train, y_train)  # Fits the parameters to the model
+predictions = model.predict(x_test)  # Gets accuracy score from test set
+print(f"Model Accuracy:\t{accuracy_score(y_test, predictions)}")
 
-# PATH TO TESTING IMAGE
-test_path = "Test/22.png"
+# ======Training======
+for file in os.listdir("Test"):
+    print("=" * 20)
+    print(f"Testing {file}...")
 
-# Gets testing image
-test = pd.DataFrame()
-array = get_image(test_path)
-test = test.append(pd.DataFrame(array))
+    # PATH TO TESTING IMAGE
+    test_path = "Test/" + file
 
-# Gets and prints result
-predicted_probabilities = model.predict_proba(test)[0]
-predicted_number = model.predict(test)[0]
-print_result(predicted_probabilities, predicted_number)
+    # Gets testing image
+    test = pd.DataFrame()
+    array = get_image(test_path)
+    test = test.append(pd.DataFrame(array))
+
+    # Gets and prints result
+    predicted_probabilities = model.predict_proba(test)[0]
+    predicted_number = model.predict(test)[0]
+    print("Chance of it being a...")
+    for i in range(1, 10):
+        print(
+            f"{i}: {predicted_probabilities[i] * 100:05.2f}%",
+            end="\t" if i % 5 else "\n",
+        )
+    print(f"\033[37mHmmmm... I think the number is a {predicted_number}")
 # %%
